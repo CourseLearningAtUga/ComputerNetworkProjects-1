@@ -1,9 +1,11 @@
 import sys
+import os
 import subprocess
 import time
 import ipaddress
 from statistics import mean,median
 import matplotlib.pyplot as plt
+import json
 #taking input options to set defaults++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 def setDefaultOptions(options):
     print("the arguments passsed:=",options)
@@ -134,7 +136,6 @@ def interChangeListAccordingToHopNumber(inputdata):
     output=[]
     m=len(inputdata)
     n=len(inputdata[0])
-    print(m,n)
     for i in range(0,n):
         output.append([])
         for j in range(0,m):
@@ -218,32 +219,50 @@ def boxPlotFormatData(inputdata):
     return boxplotdata,labels
 def processDataTopythonDict(inputdata):
     output1=cleanTheData(inputdata)
-    printarr(output1)
+    # printarr(output1)
     output2=calculateMinMaxAverageMedian(output1)
-    printarr(output2)
+    # printarr(output2)
    
     return output1,output2
 
-def plotTheDataToPdf(inputdata,pdfname):
+def plotTheDataToPdf(inputdata,graphdir):
     BoxPlotData,Labels=boxPlotFormatData(inputdata)
     plt.xticks(rotation=90)
     listofcolors=["#ACB2FC","#F7A99C","#7FE5CA","#D5B0FC","#FFD0AC","#8BE9F9","#FFB2C8","#DAF3BF","#FFCBFF","#FEE5A8"]
     bp=plt.boxplot(BoxPlotData,patch_artist=True,labels=Labels)
     for i in range(0,len(BoxPlotData)):
         bp['boxes'][i].set_color(listofcolors[i%len(listofcolors)])
-    plt.savefig(pdfname,format="pdf",bbox_inches="tight")    
-    
+    script_dir = os.path.dirname(__file__)
+    middle,filname=os.path.split(graphdir)
+    middlefilepath = script_dir+ middle
+    finalfilepath= os.path.join(middlefilepath, filname)
+    if not os.path.exists(middlefilepath):
+        os.makedirs(middlefilepath)
+    plt.savefig(finalfilepath,format="pdf",bbox_inches="tight")    
 
+def createTheJsonFile(dictdata,jsondir):
+    script_dir = os.path.dirname(__file__)
+    middle,filname=os.path.split(jsondir)
+    middlefilepath = script_dir+ middle
+    finalfilepath= os.path.join(middlefilepath, filname)
+    # print("entered5",finalfilepath)
+    if not os.path.exists(middlefilepath):
+        os.makedirs(middlefilepath)
+    with open(finalfilepath, "w") as outfile:
+        # print("entered6",finalfilepath)
+        json.dump(dictdata, outfile,indent=4)
+    
+    
 def main():
     print("the arguments passsed:=",sys.argv)
-    
     output="/home/vishal/Desktop/temp.json"
     graph="/home/vishal/Desktop/graph.pdf"
     numofruns,rundelay,maxhops,target,test,testdir,jsondir,graphdir=setDefaultOptions(sys.argv)
     print("running",numofruns,rundelay,maxhops,target)
     tracerouteoutput=runTraceRoute(numofruns=numofruns,rundelay=rundelay,maxhops=maxhops,target=target)
     plotdata,dictdata=processDataTopythonDict(tracerouteoutput)#convert data to python dict so as to easily convert to json
-    plotTheDataToPdf(plotdata,pdfname="myfirstpdf.pdf")
+    createTheJsonFile(dictdata,jsondir)#create the json file using dictionary data
+    plotTheDataToPdf(plotdata,graphdir)#create the pdf file using data
     
 
 main()
