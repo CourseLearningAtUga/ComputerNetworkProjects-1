@@ -6,6 +6,8 @@ import ipaddress
 from statistics import mean,median
 import matplotlib.pyplot as plt
 import json
+import socket
+
 #taking input options to set defaults++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 def setDefaultOptions(options):
     print("the arguments passsed:=",options)
@@ -61,14 +63,14 @@ def setDefaultOptions(options):
                 json=True
                 jsondir=options[i+1]
             except:
-                print("please enter right value after --test option")
+                print("please enter right value after -o option")
                 exit()
         elif options[i]=='-g':
             try:
                 graph=True
                 graphdir=options[i+1]
             except:
-                print("please enter right value after --test option")
+                print("please enter right value after -g option")
                 exit()
     if not graph:
         print("enter the option -g along with pdf dir ")
@@ -109,6 +111,20 @@ def runTraceRoute(numofruns,rundelay,maxhops,target):
 
 
 #helpers function========================================================================================================================
+def internet(host="8.8.8.8", port=53, timeout=3):
+    """
+    Host: 8.8.8.8 (google-public-dns-a.google.com)
+    OpenPort: 53/tcp
+    Service: domain (DNS/TCP)
+    """
+    try:
+        socket.setdefaulttimeout(timeout)
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+        return True
+    except socket.error as ex:
+        print(ex)
+        return False
+
 def printarr(arr):
     for i in range(0,len(arr)):
         print(arr[i])
@@ -178,6 +194,21 @@ def createDictData(inputdata):
                 output[i]['latency'].append(float(inputdata[i][j][k]))
     return output
 #helpers function==========================================================================================================================
+def convertFileInputToList(traceoutput):
+    combinedtraceoutput=[]
+    temp=""
+    for i in range(0,len(traceoutput)):
+        
+        if traceoutput[i]=="\n":
+            combinedtraceoutput.append(temp)
+            temp=""
+        else:
+            temp=temp+traceoutput[i]
+    combinedtraceoutput=combinedtraceoutput[1:]
+    return combinedtraceoutput
+    
+    
+    
 
 def cleanTheData(inputdata):
     finaloutput=[]
@@ -257,9 +288,25 @@ def main():
     print("the arguments passsed:=",sys.argv)
     output="/home/vishal/Desktop/temp.json"
     graph="/home/vishal/Desktop/graph.pdf"
+
+    tracerouteoutput=[]
     numofruns,rundelay,maxhops,target,test,testdir,jsondir,graphdir=setDefaultOptions(sys.argv)
-    print("running",numofruns,rundelay,maxhops,target)
-    tracerouteoutput=runTraceRoute(numofruns=numofruns,rundelay=rundelay,maxhops=maxhops,target=target)
+    if test:
+        print("=======running in test mode======")
+        path=script_dir = os.path.dirname(__file__)
+        fullpath=os.path.join(path, testdir)
+        dir_list=os.listdir(fullpath)
+        print("file list: ",dir_list)   
+        for i in range(0,len(dir_list)):
+            finalfilepath= os.path.join(fullpath, dir_list[i])
+            with open(finalfilepath) as f:
+                tracerouteoutput.append(convertFileInputToList(f.read()))
+    else:
+        if not internet():
+            print("no internet please check for internet connection or give --test as input")
+            exit()
+        print("=======running in normal mode======")
+        tracerouteoutput=runTraceRoute(numofruns=numofruns,rundelay=rundelay,maxhops=maxhops,target=target)
     plotdata,dictdata=processDataTopythonDict(tracerouteoutput)#convert data to python dict so as to easily convert to json
     createTheJsonFile(dictdata,jsondir)#create the json file using dictionary data
     plotTheDataToPdf(plotdata,graphdir)#create the pdf file using data
