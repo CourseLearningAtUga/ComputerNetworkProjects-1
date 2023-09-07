@@ -99,7 +99,7 @@ def runTraceRouteOnce(command):
     return combinedtraceoutput
     
 def runTraceRoute(numofruns,rundelay,maxhops,target):
-    command=["traceroute","-m",str(maxhops),target]
+    command=["traceroute","-m",str(maxhops),"-I",target]
     finaloutput=[]
     for i in range(0,numofruns):
         finaloutput.append(runTraceRouteOnce(command))
@@ -248,6 +248,16 @@ def boxPlotFormatData(inputdata):
         labels.append('hop '+str(inputdata[i]['hop']))
         boxplotdata.append(inputdata[i]['latency'])
     return boxplotdata,labels
+def plotMean(inputdata,plt):
+    # print(inputdata)
+    xaxis=[]
+    yaxis=[]
+    for i in range(0,len(inputdata)):
+        xaxis.append('hop '+str(inputdata[i]['hop']))
+        yaxis.append(inputdata[i]['avg'])
+    print(xaxis)
+    print(yaxis)
+    plt.plot(xaxis,yaxis,"ro")
 def processDataTopythonDict(inputdata):
     output1=cleanTheData(inputdata)
     # printarr(output1)
@@ -256,26 +266,24 @@ def processDataTopythonDict(inputdata):
    
     return output1,output2
 
-def plotTheDataToPdf(inputdata,graphdir):
+def plotTheDataToPdf(inputdata,graphdir,inputMeanData):
     BoxPlotData,Labels=boxPlotFormatData(inputdata)
     plt.xticks(rotation=90)
     listofcolors=["#ACB2FC","#F7A99C","#7FE5CA","#D5B0FC","#FFD0AC","#8BE9F9","#FFB2C8","#DAF3BF","#FFCBFF","#FEE5A8"]
-    bp=plt.boxplot(BoxPlotData,patch_artist=True,labels=Labels)
+    bp=plt.boxplot(BoxPlotData,patch_artist=True,labels=Labels,showmeans=True,meanprops={"marker": "s","markeredgecolor": "black","markerfacecolor":'black',"markersize": "3"})
+    # plotMean(inputMeanData,plt)
+    
     for i in range(0,len(BoxPlotData)):
         bp['boxes'][i].set_color(listofcolors[i%len(listofcolors)])
-    script_dir = os.path.dirname(__file__)
-    middle,filname=os.path.split(graphdir)
-    middlefilepath = script_dir+ middle
-    finalfilepath= os.path.join(middlefilepath, filname)
+    finalfilepath= graphdir 
+    middlefilepath = os.path.dirname(graphdir)
     if not os.path.exists(middlefilepath):
         os.makedirs(middlefilepath)
     plt.savefig(finalfilepath,format="pdf",bbox_inches="tight")    
 
 def createTheJsonFile(dictdata,jsondir):
-    script_dir = os.path.dirname(__file__)
-    middle,filname=os.path.split(jsondir)
-    middlefilepath = script_dir+ middle
-    finalfilepath= os.path.join(middlefilepath, filname)
+    finalfilepath=jsondir
+    middlefilepath=os.path.dirname(jsondir)
     # print("entered5",finalfilepath)
     if not os.path.exists(middlefilepath):
         os.makedirs(middlefilepath)
@@ -293,9 +301,8 @@ def main():
     numofruns,rundelay,maxhops,target,test,testdir,jsondir,graphdir=setDefaultOptions(sys.argv)
     if test:
         print("=======running in test mode======")
-        path=script_dir = os.path.dirname(__file__)
-        fullpath=os.path.join(path, testdir)
-        dir_list=os.listdir(fullpath)
+        dir_list=os.listdir(testdir)
+        fullpath=testdir
         print("file list: ",dir_list)   
         for i in range(0,len(dir_list)):
             finalfilepath= os.path.join(fullpath, dir_list[i])
@@ -309,7 +316,7 @@ def main():
         tracerouteoutput=runTraceRoute(numofruns=numofruns,rundelay=rundelay,maxhops=maxhops,target=target)
     plotdata,dictdata=processDataTopythonDict(tracerouteoutput)#convert data to python dict so as to easily convert to json
     createTheJsonFile(dictdata,jsondir)#create the json file using dictionary data
-    plotTheDataToPdf(plotdata,graphdir)#create the pdf file using data
+    plotTheDataToPdf(plotdata,graphdir,dictdata)#create the pdf file using data
     
 
 main()
