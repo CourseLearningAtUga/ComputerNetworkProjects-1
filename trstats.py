@@ -7,11 +7,11 @@ from statistics import mean,median
 import matplotlib.pyplot as plt
 import json
 import socket
+import itertools
 
 #taking input options to set defaults++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 def setDefaultOptions(options):
-    print("the arguments passsed:=",options)
-    print()
+    
     numofruns=5
     rundelay=0
     maxhops=10
@@ -192,6 +192,10 @@ def createDictData(inputdata):
         for j in range(0,len(inputdata[i])):
             for k in range(1,len(inputdata[i][j])):
                 output[i]['latency'].append(float(inputdata[i][j][k]))
+    
+    for i in range(0,len(output)):
+        output[i]['hosts']=list(output[i]['hosts'] for output[i]['hosts'],_ in itertools.groupby(output[i]['hosts']))
+
     return output
 #helpers function==========================================================================================================================
 def convertFileInputToList(traceoutput):
@@ -270,7 +274,7 @@ def plotTheDataToPdf(inputdata,graphdir,inputMeanData):
     BoxPlotData,Labels=boxPlotFormatData(inputdata)
     plt.xticks(rotation=90)
     listofcolors=["#ACB2FC","#F7A99C","#7FE5CA","#D5B0FC","#FFD0AC","#8BE9F9","#FFB2C8","#DAF3BF","#FFCBFF","#FEE5A8"]
-    bp=plt.boxplot(BoxPlotData,patch_artist=True,labels=Labels,showmeans=True,meanprops={"marker": "s","markeredgecolor": "black","markerfacecolor":'black',"markersize": "3"})
+    bp=plt.boxplot(BoxPlotData,patch_artist=True,labels=Labels,showmeans=True,meanprops={"marker": "s","markeredgecolor": "blue","markerfacecolor":'blue',"markersize": "3"})
     # plotMean(inputMeanData,plt)
     
     for i in range(0,len(BoxPlotData)):
@@ -293,10 +297,19 @@ def createTheJsonFile(dictdata,jsondir):
     
     
 def main():
-    print("the arguments passsed:=",sys.argv)
+    # print("the arguments passsed:=",sys.argv)
     output="/home/vishal/Desktop/temp.json"
     graph="/home/vishal/Desktop/graph.pdf"
-
+    print("                                                                                                                      ")
+    print(" some example inputs")
+    print("======================================================================================================================")
+   
+    print("python trstats.py  -n 10 -d 0 -m 10 -o /home/vishal/Desktop/project-traceroute/ComputerNetworkProjects/temp.json -g /home/vishal/Desktop/project-traceroute/ComputerNetworkProjects/temp.pdf www.italia.gov.it")
+    print()
+    print("python trstats.py -o /home/vishal/Desktop/project-traceroute/ComputerNetworkProjects/temp2/temp.json -g /home/vishal/Desktop/project-traceroute/ComputerNetworkProjects/temp1/temp.pdf www.italia.gov.it  --test /home/vishal/Desktop/project-traceroute/ComputerNetworkProjects/test_files")
+    
+    print("======================================================================================================================")
+    print("                                                                                                                      ")
     tracerouteoutput=[]
     numofruns,rundelay,maxhops,target,test,testdir,jsondir,graphdir=setDefaultOptions(sys.argv)
     if test:
