@@ -99,7 +99,7 @@ def runTraceRouteOnce(command):
     return combinedtraceoutput
     
 def runTraceRoute(numofruns,rundelay,maxhops,target):
-    command=["traceroute","-m",str(maxhops),"-I",target]
+    command=["traceroute","-m",str(maxhops),target]
     finaloutput=[]
     for i in range(0,numofruns):
         finaloutput.append(runTraceRouteOnce(command))
