@@ -305,9 +305,9 @@ def main():
     print(" some example inputs")
     print("======================================================================================================================")
    
-    print("python trstats.py  -n 10 -d 0 -m 10 -o /home/vishal/Desktop/project-traceroute/ComputerNetworkProjects/temp.json -g /home/vishal/Desktop/project-traceroute/ComputerNetworkProjects/temp.pdf www.italia.gov.it")
+    print("python trstats.py  -n 10 -d 0 -m 10 -o /home/student/GANDLA-trstats/temp.json -g /home/student/GANDLA-trstats/temp.pdf www.italia.gov.it")
     print()
-    print("python trstats.py -o /home/vishal/Desktop/project-traceroute/ComputerNetworkProjects/temp2/temp.json -g /home/vishal/Desktop/project-traceroute/ComputerNetworkProjects/temp1/temp.pdf www.italia.gov.it  --test /home/vishal/Desktop/project-traceroute/ComputerNetworkProjects/test_files")
+    print("python trstats.py -o /home/student/GANDLA-trstats/temp.json -g /home/student/GANDLA-trstats/temp.pdf www.italia.gov.it  --test /home/student/GANDLA-trstats/test_files")
     
     print("======================================================================================================================")
     print("                                                                                                                      ")
