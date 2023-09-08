@@ -194,6 +194,7 @@ def createDictData(inputdata):
                 output[i]['latency'].append(float(inputdata[i][j][k]))
     
     for i in range(0,len(output)):
+        output[i]['hosts'].sort()
         output[i]['hosts']=list(output[i]['hosts'] for output[i]['hosts'],_ in itertools.groupby(output[i]['hosts']))
 
     return output
